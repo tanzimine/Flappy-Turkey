@@ -1,6 +1,7 @@
 
 
 import pygame
+import pygame.mixer_music
 from sys import exit
 import random
 
@@ -22,6 +23,7 @@ top_pipe_image = pygame.image.load("assets/pipe_top.png")
 bottom_pipe_image = pygame.image.load("assets/pipe_bottom.png")
 game_over_image = pygame.image.load("assets/game_over.png")
 start_image = pygame.image.load("assets/start.png")
+turkey_flap_image = pygame.image.load("assets/turkey_flap.png")
 
 #Game Variables
 scrolling_speed=1
@@ -30,6 +32,10 @@ score=0
 font=pygame.font.SysFont('Segoe',26)
 game_stop = True
 
+pygame.mixer.music.load("assets/background_music.mp3")
+
+flap_sound = pygame.mixer.Sound("assets/flap_sound.mp3")
+game_over_sound = pygame.mixer.Sound("assets/crash.mp3")
 
 class Bird(pygame.sprite.Sprite):
     def __init__(self):
@@ -66,6 +72,7 @@ class Bird(pygame.sprite.Sprite):
         if user_input[pygame.K_SPACE] and not self.flap and self.rect.y > 0 and self.alive:
             self.flap= True
             self.vel = -7
+            flap_sound.play()
 
 
 #pipe setup
@@ -135,6 +142,8 @@ def main():
     ground = pygame.sprite.Group()
     ground.add(Ground (x_pos_ground, y_pos_ground))
 
+    pygame.mixer.music.play(-1)
+
 
     run=True
     while run:
@@ -148,6 +157,7 @@ def main():
 
         #Backround set (background name)
         window.blit(skyline_image,(0,0))
+
 
         #continually spawning ground
         if len(ground) <=2:
@@ -174,11 +184,15 @@ def main():
         collision_ground= pygame.sprite.spritecollide(bird.sprites()[0], ground, False)
         if collision_ground or collision_pipes:
             bird.sprite.alive = False
+
             if collision_ground:
                 window.blit(game_over_image, (win_width // 2 - game_over_image.get_width() // 2, win_height //2 - game_over_image.get_height() // 2))
 
+                pygame.mixer.music.stop()
+                game_over_sound.play()
                 if user_input[pygame.K_r]:
                     score = 0
+                    pygame.mixer.music.play(-1)
                     break
 
         #spawning pipes
